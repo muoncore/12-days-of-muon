@@ -21,6 +21,8 @@ endif::[]
 
 image:applepie.jpg[Apple Pie,width=300,role="right", float="right",align="center"]
 
+TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
+
 Today, you will
 
 * Finish the Menu API

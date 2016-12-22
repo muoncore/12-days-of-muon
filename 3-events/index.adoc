@@ -19,6 +19,8 @@ ifdef::env-doc[]
 :includedir: guide/3-events
 endif::[]
 
+TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
+
 image:porkpie.jpg[Pork Pie,width=300,role="right", float="right",align="center"]
 
 Today, you will
