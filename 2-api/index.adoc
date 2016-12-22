@@ -11,7 +11,7 @@ title: Building an API
 :sharing: true
 :source-highlighter: pygments
 :toc: right
-:toc-title: Getting Started
+:toc-title: Building an API
 :toclevels: 6
 
 :includedir: .
@@ -19,9 +19,9 @@ ifdef::env-doc[]
 :includedir: guide/2-api
 endif::[]
 
-image:applepie.jpg[Apple Pie,width=300,role="right", float="right",align="center"]
-
 TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
+
+image:applepie.jpg[Apple Pie,width=300,role="right", float="right",align="center"]
 
 Today, you will
 
@@ -79,50 +79,61 @@ We need a menu data structure to work with, we'll use Java classes for these in 
 
 Create a `MenuItem` class, like so:
 
-TODO, replace
 [source,java]
 ----
-include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+include::{includedir}/menu/src/main/java/pieshop/MenuItem.java[]
 ----
-<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
-<1> Using the configuration, build a running Muon instance
-<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
-<1> Create a new reactive streaming endpoint named `mysource`
-<1> Use an RxJava2 as the source for the endpoint.
-
 
 Then, create a `CurrentMenu` class, like so:
 
-TODO, replace
 [source,java]
 ----
-include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+include::{includedir}/menu/src/main/java/pieshop/CurrentMenu.java[]
 ----
-<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
-<1> Using the configuration, build a running Muon instance
-<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
-<1> Create a new reactive streaming endpoint named `mysource`
-<1> Use an RxJava2 as the source for the endpoint.
-
 
 These will form the local state of the Menu.
 
-### RPC Endpoint - /
+Lastly, rework your `Menu` class a little to make it a little more manageable.
 
-Create a new variable within `Menu` to hold the current menu. Then update the RPC endpoint
-to send it in the response.
-
-TODO, update
 [source,java]
 ----
-include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+include::{includedir}/menu/src/main/java/pieshop/Menu.java[tags=structure-a;structure-b]
 ----
-<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
-<1> Using the configuration, build a running Muon instance
-<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
-<1> Create a new reactive streaming endpoint named `mysource`
-<1> Use an RxJava2 as the source for the endpoint.
 
+This creates a representation of the Menu containing some pies. You will use this while developing
+the API as a runtime stub.
+
+### RPC Endpoint - /
+
+Now, you need to update the RPC endpoint to be able to access this data.
+
+[source,java]
+----
+include::{includedir}/menu/src/main/java/pieshop/Menu.java[tags=rpc]
+----
+
+This simply passes the current menu state into the handler, where it will be serialised and sent through.
+
+Run the service and then call it via the cli
+
+----
+>muon rpc rpc://menu
+
+┌────────────┬───────────────────┬────────────────────────────────────────────────────────────┐
+│ STATUS     │ CONTENT/TYPE      │ BODY                                                       │
+├────────────┼───────────────────┼────────────────────────────────────────────────────────────┤
+│ 200        │ application/json  │ {"items":[{"name":"Pork Pie","price":2.5},{"name":"Bluebe… │
+└────────────┴───────────────────┴────────────────────────────────────────────────────────────┘
+
+========= RESPONSE FULL BODY: ==================================================================
+
+{ items:
+   [ { name: 'Pork Pie', price: 2.5 },
+     { name: 'Blueberry Pie', price: 2.5 },
+     { name: 'Radish Pie', price: 2.5 },
+     { name: 'Apple Pie', price: 2.5 } ] }
+
+----
 
 ### Stream Endpoint - /
 
@@ -141,21 +152,36 @@ into the subject, distribute the Menu to all subscribers.
 Since we don't yet have a mechanism to update the menu, you can simulate it for now, using a thread
 that periodically updates the state and pushes the new data out. We will fix this in the next episode
 
-TODO, update
 [source,java]
 ----
-include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+include::{includedir}/menu/src/main/java/pieshop/Menu.java[tags=stream]
 ----
-<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
-<1> Using the configuration, build a running Muon instance
-<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
-<1> Create a new reactive streaming endpoint named `mysource`
-<1> Use an RxJava2 as the source for the endpoint.
+<1> Create an RxJava `PublishSubject`. This can give us a Reactive Streams Publisher, and lets you arbitrarily push data in. There are probably better choices for most other circumstances, but for this, this is appropriate.
+<1> Obtain a `Flowable` from RxJava and expose this on a Muon stream endpoint
 
-Now we have a system inside the Menu service that allows us to keep the data internally consistent,
-and for remote clients to both query and keep an up to date local copy in their own memory.
+Re run the service, and now you can subscribe to this stream using the cli
 
-Next, we will build that service!
+----
+> muon stream stream://menu/live
+
+{ items:
+   [ { name: 'Pork Pie', price: 2.5 },
+     { name: 'Blueberry Pie', price: 2.5 },
+     { name: 'Radish Pie', price: 2.5 },
+     { name: 'Apple Pie', price: 2.5 } ] }
+{ items:
+   [ { name: 'Pork Pie', price: 2.5 },
+     { name: 'Blueberry Pie', price: 2.5 },
+     { name: 'Radish Pie', price: 2.5 },
+     { name: 'Apple Pie', price: 2.5 } ] }
+
+... every second ...
+----
+
+Now we have a system inside the Menu service that allows us to keep a consistent version of the menu data,
+and for remote clients to both retrieve that, and also have the Menu service keep that up to date via push updates.
+
+Next, we will build the Order service that will use this!
 
 ## Create the Order Microservice
 
@@ -201,18 +227,130 @@ npm install muon-core --save
 
 Create a new file as the entry point, `index.js`
 
+[source,javascript]
 ----
+include::{includedir}/orders/index.js[tags=init]
+----
+<1> Create a Muon instance using the given URL for the transport/ discovery connection. In this case, defaulting to AMQP.
+
+You can run this up
 
 ----
+> node index.js
+----
+
+It will appear in the Muon discovery information, however it has no functionality, so you can't _do_ anything with it yet.
 
 ### Get the Menu Data
 
+Before we give the Order its own API, we will get some data from the Menu and store it in the Order service. This shows Muon in use
+as a client.
+
+Start your Menu service in a different process and leave it running.
+
+What we want to do now is to get the Menu data, and pull it into the Order service.
+
+As we discussed above, this will allow the order service to keep on processing even when the Menu service goes down, an AP
+design decision.
+
+[source,javascript]
+----
+include::{includedir}/orders/index.js[tags=stream-connection]
+----
+<1> Subscribe to the menu live data. Remember that this is pushing new updates every second
+<1> On an error, attempt to reconnect 10s later.
+<1> Trigger the connection/ reconnect
+
+Now run the server again. You should see the log messages every second. Try shutting down the
+Menu service, you'll see error messages and attempts to reconnect.
+
+Start the Menu service up again and you'll see the subscription be re-established.
+
+You now have menu data, held locally within the Order service, and eventually consistent with
+the Menu service itself.
+
 ### Create the Order API
+
+Now we have the Menu data, we can look to process orders!
+
+This naturally fits an RPC style interaction. We will provide a single endpoint `/order` that
+lets you place an order.
+
+This will be done by submitting the following data
+
+[source,json]
+----
+{
+  "client": "David"                               //<1>
+  "items": [                                      //<2>
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc7", "value":2},
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc8", "value":2},
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc9", "value":2},
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc1", "value":2}
+  ]
+}
+----
+<1> The client who placed this order.
+<1> The items, in a list matching item id to the number required
+
+The response will show the full order
+
+[source,json]
+----
+{
+  "client": "David"
+  "items": [
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc7", "value":2},
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc8", "value":2},
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc9", "value":2},
+    {"id":"b4690eb0-8b7f-4707-896b-e7772910fcc1", "value":2}
+  ],
+  "total": 15.99                               //<1>
+}
+----
+<1> The total order value
+
+Implementing this is fairly straight forward. Create a new RPC endpoint in `index.js`
+
+[source,javascript]
+----
+include::{includedir}/orders/index.js[tags=order-rpc]
+----
+<1> Create an RPC endpoint for /order
+<1> Obtain the RPC payload
+<1> Deep clone the order.
+<1> Calculate the `total` field and add it to the response.
+
+At this point, you aren't storing the Orders coming in, but you can see how we can perform
+transactional processing and remain resilient in the face of a network failure.
+
+To run this, you can use the CLI. FIrst obtain the IDs from the Menu as above, then
+call Order
+
+----
+> muon rpc rpc://orders/order '{"items": [{"id": "33c919e2-9291-44c6-8195-c9bbfb4517b5", "value": 5}] }'
+
+┌────────────┬──────────────────┬────────────────────────────────────────────────────────────┐
+│ STATUS     │ CONTENT/TYPE     │ BODY                                                       │
+├────────────┼──────────────────┼────────────────────────────────────────────────────────────┤
+│ 200        │ application/json │ {"items":[{"id":"33c919e2-9291-44c6-8195-c9bbfb4517b5","v… │
+└────────────┴──────────────────┴────────────────────────────────────────────────────────────┘
+
+========= RESPONSE FULL BODY: ==========================================
+
+{ items: [ { id: '33c919e2-9291-44c6-8195-c9bbfb4517b5', value: 5 } ],
+  total: 12.5 }
+
+----
 
 ## Summary
 
-You now have two Microservices that interact in a Reactive way. You have seen eventual consistency,
-the benefits of streaming data and how to build an AP system.
+You now have two Microservices that interact in a Reactive way, communicating via
+streaming data and maintaining local data where it is needed, rather than abusing
+RPC style interactions to do that.
+
+You have seen eventual consistency, the benefits of streaming data
+and how to build an AP system.
 
 In the next episode of the series, you will add data persistence and distribution to your services in the form of
 event streams using a dedicated Microservice, Photon.
