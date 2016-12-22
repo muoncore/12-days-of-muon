@@ -1,0 +1,16 @@
+---
+layout: documentation
+---
+:title: Using Events in Microservices
+:language: java
+:projectionlanguage: javascript
+:emitevent: ../../java/SNAPSHOT/src/main/java/io/muoncore/example/event/guide/EmitEvent.java
+:subscribeevent: ../../java/SNAPSHOT/src/main/java/io/muoncore/example/ReactiveRPC.java
+:buildaggregation: ../../java/SNAPSHOT/src/main/java/io/muoncore/example/event/guide/UserAggregationService.java
+:userlistprojection: ../../java/SNAPSHOT/src/main/java/io/muoncore/example/event/guide/userlistprojection.js
+:installprojection: ../../java/SNAPSHOT/src/main/java/io/muoncore/example/ReactiveRPC.java
+:useprojection: ../../java/SNAPSHOT/src/main/java/io/muoncore/example/event/guide/UserProjectionService.java
+
+include::guide/eventguide/eventguide.adoc[]
+
+

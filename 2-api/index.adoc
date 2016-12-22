@@ -1,0 +1,216 @@
+---
+layout: 12days
+title: Building an API
+---
+:toc:
+:date: 2015-01-05 11:40
+:source-highlighter: pygments
+:title: Building an API
+:date: 2015-01-05 11:40
+:comments: true
+:sharing: true
+:source-highlighter: pygments
+:toc: right
+:toc-title: Getting Started
+:toclevels: 6
+
+:includedir: .
+ifdef::env-doc[]
+:includedir: guide/2-api
+endif::[]
+
+image:applepie.jpg[Apple Pie,width=300,role="right", float="right",align="center"]
+
+Today, you will
+
+* Finish the Menu API
+* Build an Order API
+* Have it interact with the Menu API
+* Create reactive data flows between services
+
+This last item is important. Understanding how data should move in a Reactive system is the most important lesson when
+building Microservices that will be able to tolerate network distribution and the various fun failure modes that comes with that.
+
+include::{includedir}/../12daypromo.adoc[]
+
+## Implement the Menu Microservice
+
+Imagine a Pie Shop (a nice one!). You have tables, people looking at the menu, nice plants in the corner, the works
+
+This is a advanced shop, and so at each of the tables is a tablet showing the current menu.
+
+Given the boutique nature of the shop, the Menu is constantly updated through the day as the kitchen
+makes Pies and they are eaten, so reducing stock again.
+
+The Menu needs to be able to show the various items available, their prices and be able to recieve
+push updates whenever these change.
+
+To implement these, you need to update the service you created in part one, replacing its endpoints:
+
+* Get the current state as a request/ response, aka RPC. In clients, you will use this to get the initial state of the menu, and also
+any time you need to ad hoc query it.
+* Have current state always be up to date. This endpoint will push updates from the Menu to subscribed clients
+using the Reactive Stream protocol. This will allow you to distribute low latency updates to all clients.
+
+We will implement updating the Menu state in the next episode of the series.
+
+.Introspection
+****
+Muon is built to enable you to use multiple protocols. Given that, you are going to need a way to understand what a service is able to do for you.
+
+Since Muon is focused on communication and data models, it's approach is generally "the answer is a protocol, what's the question?"
+
+The answer in Muon is the _Introspection Protocol_. This is a simple interaction that allows you to interrogate a remote system
+to see what it is capable of doing for you.
+
+To call it via the CLI, execute `muon introspect [servicename]`
+
+This is also available in the Muon SDK apis.
+
+Try that now on your running menu microservice to see the protocol endpoints you have already made.
+
+****
+
+### Internal Data
+
+We need a menu data structure to work with, we'll use Java classes for these in Java land.
+
+Create a `MenuItem` class, like so:
+
+TODO, replace
+[source,java]
+----
+include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+----
+<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
+<1> Using the configuration, build a running Muon instance
+<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
+<1> Create a new reactive streaming endpoint named `mysource`
+<1> Use an RxJava2 as the source for the endpoint.
+
+
+Then, create a `CurrentMenu` class, like so:
+
+TODO, replace
+[source,java]
+----
+include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+----
+<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
+<1> Using the configuration, build a running Muon instance
+<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
+<1> Create a new reactive streaming endpoint named `mysource`
+<1> Use an RxJava2 as the source for the endpoint.
+
+
+These will form the local state of the Menu.
+
+### RPC Endpoint - /
+
+Create a new variable within `Menu` to hold the current menu. Then update the RPC endpoint
+to send it in the response.
+
+TODO, update
+[source,java]
+----
+include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+----
+<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
+<1> Using the configuration, build a running Muon instance
+<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
+<1> Create a new reactive streaming endpoint named `mysource`
+<1> Use an RxJava2 as the source for the endpoint.
+
+
+### Stream Endpoint - /
+
+Next, you need to update the stream endpoint to send the state of the menu every time it is updated.
+
+There are multiple methods for doing this, depending on which FRP library you use to implement
+your service internals (Muon takes no position on what's best in that field, only caring that
+they implement Reactive Streams).
+
+Assuming you stick with RxJava2, one way to implement this would be to push the current state into an RxJava
+`Subject`.
+
+The following code will create a new streaming endpoint that, whenever a new item of data is pushed
+into the subject, distribute the Menu to all subscribers.
+
+Since we don't yet have a mechanism to update the menu, you can simulate it for now, using a thread
+that periodically updates the state and pushes the new data out. We will fix this in the next episode
+
+TODO, update
+[source,java]
+----
+include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+----
+<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
+<1> Using the configuration, build a running Muon instance
+<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
+<1> Create a new reactive streaming endpoint named `mysource`
+<1> Use an RxJava2 as the source for the endpoint.
+
+Now we have a system inside the Menu service that allows us to keep the data internally consistent,
+and for remote clients to both query and keep an up to date local copy in their own memory.
+
+Next, we will build that service!
+
+## Create the Order Microservice
+
+Next up, we want to be able to take orders.  To build this, we will use Node.js (go Polyglot!)
+
+The API for an Order is an RPC endpoint. Take a request, process, send response back when done.
+
+The complexity comes from the interaction between the Order and Menu services. How should we
+have the communicate?
+
+The easy way is to have Order make an RPC call to the Menu, getting the state each time. This
+would add latency and some fragility to the service though. What happens if the Menu service goes down?
+
+Here you have CAP theorum choice to make. Do you want to build a consistent, yet fragile system,
+and so always check the Menu at source, or do you want to build an available system that could make the occasional
+inconsistent data decision?
+
+In our case, we will choose AP (because I always choose AP where possible, otherwise why are you building
+Microservices?)
+
+The impact on our system is that the Order service will be able to place orders while the Menu service
+is down. The cost of this is that the Order service may place orders against an out of date Menu, either stock
+or price. This would only be the case if the Menu service is completely unavailable.
+
+To do this, you will subscribe to the streaming endpoint on the Menu service and effectively keep
+a representation of the Menu data within the Order service. This gives us some nice advantages.
+Scale will be much easier, all the data is now local, and in memory. We can rework the data structure to make
+it more amenable for Order processing. If the stream connection is lost, we still have that data in memory until the Menu
+service comes back up, at which point the service reconnects and gets back in sync
+
+### Create the Microservice
+
+First, install NPM and node as at http://npmjs.org
+
+Once you have a working installation, create a new directory called 'orders' and then create a new npm project in there
+using `npm init`
+
+Once you have done that, add a dependency for muon
+
+```
+npm install muon-core --save
+```
+
+Create a new file as the entry point, `index.js`
+
+----
+
+----
+
+### Get the Menu Data
+
+### Create the Order API
+
+## Summary
+
+You now have two Microservices that interact in a Reactive way. You have seen eventual consistency,
+the benefits of streaming data and how to build an AP system.
+
+In the next episode of the series, you will add data persistence and distribution to your services in the form of
+event streams using a dedicated Microservice, Photon.

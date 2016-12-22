@@ -1,0 +1,269 @@
+---
+layout: 12days
+title: Getting Setup
+---
+:toc:
+:date: 2015-01-05 11:40
+:source-highlighter: pygments
+:title: Getting Started
+:date: 2015-01-05 11:40
+:comments: true
+:sharing: true
+:source-highlighter: pygments
+:toc: right
+:toc-title: Getting Started
+:toclevels: 6
+
+:includedir: .
+ifdef::env-doc[]
+:includedir: guide/1-setup
+endif::[]
+
+TIP: This guide is maintained at https://github.com/muoncore/muon.js Please submit issues at that repository.
+
+image:https://upload.wikimedia.org/wikipedia/commons/8/8e/Best_Blueberry_Pie_with_Foolproof_Pie_Dough.jpg[Blueberry,width=300,role="right", float="right",align="center"]
+
+Today, you will
+
+* get a development environment setup, including the cli
+* See some helper services we provide to make things easier
+* build a couple of microservices
+* have them do something useful
+
+include::{includedir}/../12daypromo.adoc[]
+
+## Setting up your Environment
+
+Muon is not demanding of you development environment. You can use your regular IDE, and your language and
+frameworks of choice, so long as the language runtime is currently supported.
+
+One thing that is necessary is support for the network transport that Muon services will use to communicate with
+each other.
+
+Currently, AMQP is best supported, and so that is what we will use.
+
+Aside from that, you don't need anything else to develop Muon services.
+
+That said, we provide a set of Microservices that give a set of basic functionality that we find is often wanted.
+
+These are (as of writing):-
+
+* Photon - an Event Store and Projection engine
+* Molecule - a pluggable React based UI
+
+These, along with RabbitMQ, give the base environment we recommend for you to get started developing Muon services.
+
+We provide two main routes to get them, a Docker Compose environment, and a Vagrant VM that wraps the Docker Compose environment.
+
+.libMuon
+****
+If you language is not currently supported, come and join the libMuon effort!
+
+This is implementing Muon in a native C++ library, with support for bindings into many other languages.
+
+When complete, we will have very broad language capability, and full interoperability with the existing Muon
+libraries and services.
+
+https://github.com/muoncore/libmuon
+****
+
+### Installing the Base Services using Docker Compose
+
+Go to https://github.com/muoncore/muon-starter and follow the instructions there.
+
+once complete, you will have the services running, you can check them with the CLI (installed below)
+or by visiting the Molecule UI at http://localhost:3420
+
+### Installing the Base Services using Vagrant
+
+_This is awaiting a stable vagrant build_
+
+### Installing the CLI
+
+Muon provides a CLI. You install this using *npm*, from the Node.js environment.
+
+You do not need to code in JavaScript or use node beyond this if you don't want to, but it is currently required
+to use the CLI.
+
+Install NPM (as at https://www.npmjs.com/)
+
+Then install muon using
+
+```bash
+> npm install -g muon-cli
+```
+
+Check it's working using the `discover` commmand, or it's short version `d`. This will list
+ all of the currently running Muon services.
+
+You will need to set the MUON_URL environment variable first, which tells Muon how to connect to the
+network transport/ discovery service. In this case, RabbitMQ
+
+```
+> export MUON_URL=amqp://muon:microservices@localhost
+> muon d
+```
+
+Once this works, you have a running CLI, and you can begin to interrogate what the services can do.
+
+Likely, you only have Photon and Molecule running.
+
+Let's build some more!
+
+## Building a multi protocol API
+
+We are building a Pie shop management system. We will start designing and building proper services
+in the next section. Today though, we just want to get something running.
+
+Often, the easiest way to get started with a system is to define the _queries_ that you need to make.
+Without concerning yourself with changing data, we can effectively stub out the data we want to provide.
+
+With Muon, we have the opportunity to incorporate multiple different protocols to make our API.
+
+Built in, we can use RPC for simple request/ response, and Reactive Streaming, for streaming push updates.
+
+For this API, we will build an API for the _Menu_.
+
+This will be ultimately be made available on the web, on tabletop displays and wait staff mobile devices
+(although we won't build a mobile app in this tutorial!)
+
+In this case, the data set is small, and so instead of providing granular APIs, we will request the entire
+data set and process it in local memory to get the best performance and tolerate network failure.
+
+We will provide two endpoints, one RPC and the other Stream. This will allow clients to get the current state,
+and also receive push updates whenever we update the menu data
+
+### Muon Java Microservice
+
+The Menu service, we will write in _Java_. To get started wth this, download Gradle.
+
+Try using link:http://sdkman.io/[SDKMan]
+
+#### Create the build file
+
+Create a new Gradle build file as below.
+
+```groovy
+buildscript {
+    ext {
+        springBootVersion = '1.4.2.RELEASE'  <1>
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+
+sourceCompatibility = 1.8
+version = '1.0'
+
+springBoot {
+    mainClass = 'pieshop.Menu'            <2>
+}
+
+repositories {
+    jcenter()
+    maven { url 'https://simplicityitself.artifactoryonline.com/simplicityitself/repo' } <3>
+}
+
+dependencies {
+    def muonVersion = "7.1.3"                             <4>
+    compile "io.muoncore:muon-core:$muonVersion"
+    compile "io.muoncore:muon-transport-amqp:$muonVersion"
+    compile "io.muoncore:muon-discovery-amqp:$muonVersion"
+
+    compile 'io.reactivex.rxjava2:rxjava:2.0.3'           <5>
+
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.2.1'
+}
+
+```
+<1> We use the Spring Boot gradle plugin to give us easy uberjar and app distribution
+<1> Set the main class for the spring boot plugin run command
+<1> Add the Artifactory url where the muon libraries can be found
+<1> The latest version of Muon, with the basic libraries for connecting to AMQP.
+<1> The current version of RxJava, which we will use to build a streaming endpoint
+
+Create the standard file structure
+
+```
+
+ src/
+   main/
+      java/
+```
+
+#### Create Muon Service class
+
+To start with, we need a single class to put our Muon API in. Later in the series we will separate them
+up.
+
+Create the class referenced above `pieshop.Menu` as a regular Java class with a Main method.
+
+like this
+
+[source,java]
+----
+include::../../submodules/java/doc/src/main/java/io/muoncore/example/guide/Menu.java[lines=2..-1]
+----
+<1> Construct a configuration for Muon. Here using all the defaults and call the service `menu`
+<1> Using the configuration, build a running Muon instance
+<1> Create an RPC protocol request handler. This uses `all()`, which matches any incoming request
+<1> Create a new reactive streaming endpoint named `mysource`
+<1> Use an RxJava2 as the source for the endpoint.
+
+This can be run using the `bootRun` command from the Spring Boot Gradle plugin
+
+```
+> gradle bootRun
+```
+
+You can then make a request to the service using the CLI and recieve `hello world` in return
+
+```
+> muon rpc rpc://menu/
+```
+
+You can subscribe to the stream endpoint like so
+
+----
+> muon stream stream://menu/mysource
+'Hello'
+'World'
+'Item'
+----
+
+The subscription will request and print all items, then when the source `Flowable` sends the complete signal,
+the cli will cleanly exit.
+
+
+.Make as a Common Build Tool
+****
+You will notice that all of the projects, including the starter above, use `Make` as the entry point.
+
+This is by design. We are going to be crossing between multiple build tools, invoking various forms
+of build, test, release, deploy and so on. Each tool has different requirements, and some of the phases
+aren't always necessary.
+
+Remembering all of this will be a pain. So, we use make, and standardise the targets. This gives you somewhere
+to start figuring out how the build tool doing the heavy lifting underneath wants to be run.
+
+http://www.simplicityitself.io/our%20team/2016/11/03/make-developer-api.html[Read More @ Simplicity Itself]
+****
+
+## Summary
+
+You now have a Muon environment ready to build services with. You will be building lots of them.
+
+In the next episode of the series, you will:
+
+* Create a set of microservices that form the API of the shop.
+* Understand how to use the two protocols above to service the data in different forms.
