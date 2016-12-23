@@ -42,13 +42,15 @@ instructions to the kitchen and updating the menu in real time.
 
 
 1. link:1-setup[Getting Set Up and your first Muon Service]
-1. Framework of the the Pie Shop - API Services
+1. link:2-api[Framework of the the Pie Shop - API Services]
 1. Making Pies - Event Data and Photon
-1. Testing Event Systems and Components
+1. Testing Event Systems and Muon Components
 1. Adding a React.js browser UI using Muon.js
-1. Complex Event Workflows
-1. Security using Aether
-1. Optimising performance of a Read Bound View
-1. Adding a new View on the data - Projections
-1. The Menu Board - Push updates to anywhere using Muon Reactive Streams
-1. Making it operational, backups, monitoring.
+1. To be announced!
+1. To be announced!
+1. To be announced!
+1. To be announced!
+1. To be announced!
+1. To be announced!
+1. To be announced!
+

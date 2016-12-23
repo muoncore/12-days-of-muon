@@ -13,6 +13,7 @@ var muon = Muon.create("orders", muonurl);                              //<1>
 var currentMenu = {}
 
 function connectMenu() {
+  console.log("Attempting to connect to Menu live stream")
   muon.subscribe("stream://menu/live", {}, (menu) => {                         //<1>
     currentMenu = menu
     console.log("Menu Updated")

@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "muon-core": "^7.1.10"
+    "muon-core": "^7.1.12"
   }
 }
