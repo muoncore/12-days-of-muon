@@ -1,0 +1,106 @@
+---
+layout: documentation
+---
+
+:title: Microservices Guide
+:date: 2015-01-05 11:40
+:source-highlighter: pygments
+:toc-title: Getting Involved
+
+## Getting Involved
+
+Muon is a young project, and is open for you to get involved.
+
+We want Muon to be the best way to make distributed systems, Microservices, reseearch projects. The world is your oyster.
+
+Depending on your skillset, there are different things we can work with you on.
+
+### For Developers
+
+If you're a developer who wants to work on Microservices technology, Muon is for you.
+
+Right now, we're working on
+
+* Muon core libraries (Java, Node, libMuon/Native)
+* Language bindings from libMuon to as many languages as we can cover
+* Muon Protocols
+* Discrete Microservices. Our Software Lego.
+
+If you have any experience in Java and Node, then expanding the capabilities of those existing libraries
+would be a great start.
+
+If you have experience in C/C++, we want to talk to you now about libMuon, the Native Muon library.
+
+If you have experience in other languages, our intention is to provide those via a binding to libMuon.
+
+We can start defining APIs and extensions now for those, with your help.
+
+#### Protocols
+
+Protocols are message based interactions between services. We have a set of simple ones already
+
+* RPC
+* Reactive Stream
+* Event emit and streaming (backed by Photon)
+
+We are working on more complex ones for advanced usage
+
+* Pipeline (stream oriented orchestration)
+* Transactional Events (full DDD style)
+* Various Agent Systems (FIPA, eg ContractNet)
+* Consensus (Raft)
+
+We are looking to implement these in a cross platform way, using a common *Protocol Language*
+
+This is being defined and worked on in the open, join the Muon slack channel #protocols to get involved.
+
+#### Software Lego
+
+The Muon ethos is based on systems that improve at the system level with services you add. Through composing
+ services together, and integrating them via protocols.
+
+With many Protocols, we need to implement services to provide functionality they may required (many protocols don't)
+
+For example
+
+** Photon - event store implemented in Clojure. Backs the Event protocol
+** Molecule - enables UI composition for management
+
+Future plans include
+
+* Auction records
+* Security, via Protocols and the Aether service.
+* Messaging integration
+* Social services
+
+These will be able to be implemented in any language that has a working Muon library adn then be consumed by any of
+the others. Muon based services are language agnostic by design.
+
+### For Testers
+
+Muon is currently tested at the component level. We have some testing involving multiple components, mainly using
+docker compose for orchestration.
+
+We need better multi component testing across the board.
+
+With the new Protocol Language, we will gain some cross platform benefits, but we don't yet have a testing
+story for the language yet.
+
+Get in touch!
+
+### For Academics
+
+Muon has been built with a strong influence from academic and research topics. Much of the
+more advanced areas of Muon, around Protocol definition, are drawn directly from Agent based
+systems. If you are working in any of these areas, we would love to hear from you.
+
+Specifically, Muon is suitable for
+
+* Implementing Agent systems
+* Researching and implementing Distributed Protocols
+* Providing a backbone for polyglot systems in a research setting
+
+### For Others
+
+Apart from the above, our primary focus right now is community building. So if you have experience in that, and are willing
+to help the project, please get in contact and let us know your ideas.

@@ -1,6 +1,7 @@
 ---
 layout: documentation
 ---
+
 :title: 12 Days of Muon
 :date: 2015-01-05 11:40
 :source-highlighter: pygments
@@ -30,6 +31,8 @@ The end result is the ability to create systems that express complex interaction
 together, like software "Lego"
 
 This is a series of intro articles and videos that will guide you through building a full system with UI - Ye Olde Muon Pie Shoppe
+
+If you want to get involved in developing Muon itself, see link:getting-involved.html[Getting Involved]
 
 ### Ye Olde Muon Pie Shoppe
 
