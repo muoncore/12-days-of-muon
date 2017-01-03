@@ -2,10 +2,12 @@
 layout: documentation
 ---
 
+:toc:
 :title: Microservices Guide
 :date: 2015-01-05 11:40
 :source-highlighter: pygments
 :toc-title: Getting Involved
+:toclevels: 6
 
 ## Getting Involved
 
@@ -14,6 +16,8 @@ Muon is a young project, and is open for you to get involved.
 We want Muon to be the best way to make distributed systems, Microservices, reseearch projects. The world is your oyster.
 
 Depending on your skillset, there are different things we can work with you on.
+
+We do much of our discussion on the link:https://muon-slack-invite.herokuapp.com[Slack Group]
 
 ### For Developers
 
