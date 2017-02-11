@@ -18,6 +18,7 @@ We want Muon to be the best way to make distributed systems, Microservices, rese
 Depending on your skillset, there are different things we can work with you on.
 
 We do much of our discussion on the link:https://muon-slack-invite.herokuapp.com[Slack Group]
+Also, sign up for our mailing list - https://groups.google.com/a/muoncore.io/forum/#!forum/muon-users
 
 ### For Developers
 
