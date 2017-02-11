@@ -29,10 +29,9 @@ Right now, we're working on
 * Muon core libraries (Java, Node, libMuon/Native)
 * Language bindings from libMuon to as many languages as we can cover
 * Muon Protocols
-* Discrete Microservices. Our Software Lego.
+* Re-usable Microservices giving general solutions to common problems. Our Software Lego.
 
-If you have any experience in Java and Node, then expanding the capabilities of those existing libraries
-would be a great start.
+If you have any experience in Java and Node, then expanding the capabilities of those existing libraries would be a great start.
 
 If you have experience in C/C++, we want to talk to you now about libMuon, the Native Muon library.
 
