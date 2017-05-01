@@ -16,44 +16,11 @@ endif::[]
 
 TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
 
-## 12 Days of Muon
+## Getting Started with Muon
 
 Muon is a set of projects that facilitate the building of Microservices and distributed systems.
 
-It is designed to enable you to build new, rich programming models that allow distributed communication beyond what is normally
-available using standard integration technologies such as HTTP or messaging.
-
-This is done by defining _Protocols_, and creating Microservices that back those protocols to provide rich functionality.
-
-Protocols are well defined message based interactions, such as Eventing, Reactive Streams, Auctions and many other possibilities.
-
-The end result is the ability to create systems that express complex interactions in a manageable way, and can be composed
-together, like software "Lego"
-
-This is a series of intro articles and videos that will guide you through building a full system with UI - Ye Olde Muon Pie Shoppe
-
-If you want to get involved in developing Muon itself, see link:getting-involved.html[Getting Involved]
-
-### Ye Olde Muon Pie Shoppe
-
-image:http://www.publicdomainpictures.net/pictures/30000/velka/yummy-mince-pies.jpg[Tiger,width=500,role="right", float="right",align="center"]
-
-In this series, we will build up a full example system - a retail system that can be used to run
-a pie shop.
-This is a shop, that sells pies. It sells them over the counter to customers, taking orders, auto managing stock, sending cooking
-instructions to the kitchen and updating the menu in real time.
-
+These guides will help you understand various aspects of the Muon projects
 
 1. link:1-setup[Getting Set Up and your first Muon Service]
-1. link:2-api[Framework of the the Pie Shop - API Services]
-1. Making Pies - Event Data and Photon
-1. Testing Event Systems and Muon Components
-1. Adding a React.js browser UI using Muon.js
-1. To be announced!
-1. To be announced!
-1. To be announced!
-1. To be announced!
-1. To be announced!
-1. To be announced!
-1. To be announced!
-
+1. link:2-api[API Services]
