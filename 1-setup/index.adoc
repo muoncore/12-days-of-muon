@@ -59,7 +59,7 @@ We provide two main routes to get them, a Docker Compose environment, and a Vagr
 ****
 If you language is not currently supported, come and join the libMuon effort!
 
-This is implementing Muon in a native C++ library, with support for bindings into many other languages.
+This is implementing Muon in a native Rust library, with support for bindings into many other languages.
 
 When complete, we will have very broad language capability, and full interoperability with the existing Muon
 libraries and services.
@@ -217,7 +217,7 @@ aren't always necessary.
 Remembering all of this will be a pain. So, we use make, and standardise the targets. This gives you somewhere
 to start figuring out how the build tool doing the heavy lifting underneath wants to be run.
 
-http://www.simplicityitself.io/our%20team/2016/11/03/make-developer-api.html[Read More @ Simplicity Itself]
+http://daviddawson.me/blog/2016/11/03/make-developer-api.html[Read More @ daviddawson.me]
 ****
 
 ## Summary

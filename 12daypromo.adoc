@@ -1,8 +1,0 @@
-
-.12 Days of Muon
-****
-This is part of a 12 part series showing you how to design, build and run a full Muon based system, including making use
-of the various prebuilt microservices we provide that give you powerful building blocks to compose your applications with.
-
-You can see the full series link:/guide[here]
-****

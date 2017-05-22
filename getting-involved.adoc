@@ -33,7 +33,7 @@ Right now, we're working on
 
 If you have any experience in Java and Node, then expanding the capabilities of those existing libraries would be a great start.
 
-If you have experience in C/C++, we want to talk to you now about libMuon, the Native Muon library.
+If you have experience in Rust, we want to talk to you now about libMuon, the Native Muon library.
 
 If you have experience in other languages, our intention is to provide those via a binding to libMuon.
 
