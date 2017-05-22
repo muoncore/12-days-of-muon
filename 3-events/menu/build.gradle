@@ -22,7 +22,7 @@ springBoot {
 
 repositories {
     jcenter()
-    maven { url 'https://simplicityitself.artifactoryonline.com/simplicityitself/repo' }  // <3>
+    maven { url 'https://simplicityitself.artifactoryonline.com/simplicityitself/muon' }  // <3>
 }
 
 //# tag::rpc[]
