@@ -19,11 +19,7 @@ ifdef::env-doc[]
 :includedir: guide/2-api
 endif::[]
 
-TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
-
-image:applepie.jpg[Apple Pie,width=300,role="right", float="right",align="center"]
-
-Today, you will
+TIP: This guide is maintained at https://github.com/muoncore/guide Please submit issues at that repository.
 
 * Finish the Menu API
 * Build an Order API
