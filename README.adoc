@@ -1,7 +1,5 @@
-# 12 Days of Muon
+# Muon Guides
 
-This is the home repository for the 12 days of Muon intro guide.
+This is the home repository for the Muon guides.
 
-It covers Muon in 12 easy lessons while working through building a Pie Shop Management System
-
-You can find the guide online at http://muoncore.io/guide/
+You can find the guides online at http://muoncore.io/guide/
