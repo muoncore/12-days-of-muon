@@ -1,0 +1,33 @@
+---
+layout: documentation
+title: Create a new Muon Stack
+---
+:toc:
+:source-highlighter: pygments
+:title: Create a Stack
+:source-highlighter: pygments
+:toc: right
+:toc-title: Create a Stack
+:toclevels: 6
+
+:includedir: .
+ifdef::env-doc[]
+:includedir: guide/2-api
+endif::[]
+
+## Create a new Muon Stack
+
+A Stack is one of the central concepts of Muon, it takes
+
+### Stack Concepts
+
+### Create a Stack for Muon Core Java
+
+
+
+### Create a Stack for Muon Core Node
+
+
+
+### Create a shared Protocol using JSProtocol
+

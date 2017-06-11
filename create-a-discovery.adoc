@@ -1,0 +1,31 @@
+---
+layout: documentation
+title: Create a discovery
+---
+:toc:
+:source-highlighter: pygments
+:title: Create a discovery
+:source-highlighter: pygments
+:toc: right
+:toc-title: Create a discovery
+:toclevels: 6
+
+:includedir: .
+ifdef::env-doc[]
+:includedir: guide/2-api
+endif::[]
+
+## Create a new Muon Discovery
+
+### Discovery Concepts
+
+### Create a Discovery for Muon Core Java
+
+
+
+### Create a Discovery for Muon Core Node
+
+
+
+### Create a Discovery as a Native Library for Java/ Node/ Future Muon
+

@@ -1,0 +1,96 @@
+---
+layout: documentation
+title: Create a new transport
+---
+:toc:
+:source-highlighter: pygments
+:title: Create a Transport
+:source-highlighter: pygments
+:toc: right
+:toc-title: Create a Transport
+:toclevels: 6
+
+:includedir: .
+ifdef::env-doc[]
+:includedir: guide/
+endif::[]
+
+## Create a new Muon Transport
+
+A transport in muon terms takes the core concept of a `channel` and implements it so that it can travel over a network.
+
+It does this by taking the lowest level `MuonMessage` messages, encoding them and routing them to a remote service that matches the routing information, which is made up of service name, protocol and optionally an instance identifier.
+
+Protocol stacks send and receive MuonMessages.
+
+[[img-reactive-microservice]]
+.Three different representations of a Product in a system.
+image::./images/transport-overview.png[Sub Domains]
+
+
+### Transport Concepts
+
+#### Creating channels
+
+The core concept in Muon is the channel. This is an abstraction on communication and allows us to replace what is at the other end of the channel without affecting the sender.
+
+For transports, this means that, so long as your transport can implement the same channel interface, it can send messages across any network or other form of communication mechanism and it will work with Muon.
+
+#### The Transport Client
+
+The TransportClient abstracts the client side of Muon away from the concrete transports being used. This allows protocol stacks to say `openChannel` and then send messages and have the TransportClient manage the bookeeping of creating and maintaining the appropriate channels to route those messages to the remote services.
+
+#### Server Stacks
+
+The ServerStacks instance is the server side equivalent of the Transport Client. There is only one in every Muon instance. Its role is to maintain a list of all of the registered server protocols and create and maintain channels from them on demand by the transport. When implementing the server side portion of your transport, you will obtain the ServerStack and then call `openChannel(protocolName)` or equivalent. That channel should then be attached to the channel crossing the network. Messages from the server stack channel are to be serialised and sent to the client side, messages from the network are to the deserialised and dispatched up this channel to the selected protocol stack.
+
+#### Handling Failure of the Transport Mechansim
+
+Depending on the transport technology being used, failure may be confined to a particular channel (in the case of a point to point technology such as raw TCP or gRPC), or may be systemic in nature (such as AMQP when the broker fails).
+
+In all cases, channels created by a transport should send a message to the API side with the step set to 'ChannelFailed', close the channel and drop its from its list.
+
+#### Closing a Channel
+
+Once a Protocol Stack (either end) decides the conversation is complete, it will terminate the channel by sending a MuonMessage with the `channelOperation` field set to `closed`. This should be taked as an instruction to terminate any associated resources after the message has been fully routed. At that point, the channel is removed.
+
+#### Low Level Coordination
+
+The two transport instances can communicate in anyw way they wish internally to create and maintain the connection between them. For example, the AMQP transport has :
+
+* a simple handshaking protocol for managing the creation of queues that implement the channel concept.
+* a keep alive mechanism that detects if the service on the other side of the channel has gone offline (difficult to detect otherwise for AMQP as it expects to be used to give resilience in the face of that kind of failure!)
+
+These messages should never leak outside of the transport boundary, only MuonMessages and their payloads should be sent and received at the higher level.
+
+#### Connection Multiplexing (aka "Shared Channels")
+
+
+#### URL Schemes/ connection detection
+
+Every transport is associated with a URL scheme. When a new transport is loaded into a Muon instance, it picks up the url scheme and the connection uri that can be used to then connect to it from a remote system. That information is passed to the Discovery subsystem and advertised. Using that, remote services can select the appropriate transport to use.
+
+Transport url schemes must be unique, more than one transport using the same scheme is not supported.
+
+### Create a Transport for Muon Core Java
+
+A transport in java extends the `MuonTransport` interface. At minimum, this needs to
+
+* Have a unique url scheme.
+* Return enough information in the form of a url that a remote instance of your new transport can connect to this one.
+* Create and return a new ChannelConnection on demand for a particular remote service/ protocol name.
+
+For the last item, you are not required to open the channel eagerly. It can be opened lazily on the first message sent through the channel Since the TransportClient (which wraps the transports) opens transport channels lazily, then a message is guaranteed to come through the channel straight after it is returned.
+
+Once Muon has completed its internal bootup, it will invoke `start` which provides the bulk of the collaborators to use. `Discovery` and `ServerStacks` are the most important. Discovery can be used to obtain any connection information, or any other information on the service being connected to. Discovery can be assumed to be a caching call, so not overly expensive to make queries on.
+
+The server side of the transport will be implemented purely internally and is not represented in the `MuonTransport` api. You need to open up some sort of listening service (a port, register with a remote, open a broker queue etc). Incoming requests then should be services by using `ServerStacks.openServerChannel(protocol)` to open a channel to use
+
+`Codecs` is for convenience when converting `MuonMessage` instances to/ from binary data for network IO.
+
+### Create a Transport for Muon Core Node
+
+
+
+//### Create a Transport as a Native Library for Java/ Node/ Future Muon
+
