@@ -44,7 +44,7 @@ The TransportClient abstracts the client side of Muon away from the concrete tra
 
 The ServerStacks instance is the server side equivalent of the Transport Client. There is only one in every Muon instance. Its role is to maintain a list of all of the registered server protocols and create and maintain channels from them on demand by the transport. When implementing the server side portion of your transport, you will obtain the ServerStack and then call `openChannel(protocolName)` or equivalent. That channel should then be attached to the channel crossing the network. Messages from the server stack channel are to be serialised and sent to the client side, messages from the network are to the deserialised and dispatched up this channel to the selected protocol stack.
 
-#### Handling Failure of the Transport Mechansim
+#### Handling Failure of the Transport Mechanism
 
 Depending on the transport technology being used, failure may be confined to a particular channel (in the case of a point to point technology such as raw TCP or gRPC), or may be systemic in nature (such as AMQP when the broker fails).
 

@@ -17,11 +17,79 @@ endif::[]
 
 ## Create a new Muon Discovery
 
+A Muon Discovery is intended to allow a running Muon instance to be able to find other Muon services and obtain connection from them. How this is implemented is up to you.
+
+There are two core functions of a Discovery
+
+* take a logical service name and obtain the service descriptor for it, if it can be found
+* Find services that match a given set of tags and return a list of their descriptors.
+
 ### Discovery Concepts
+
+#### Service Name
+
+The service name is the logical name of the service yu want to connect to. Most commonly, you will include the service name when calling an API provided by a Protocol Stack. The stack will then use that name when sending messages into muon core, which then uses the Discovery to select the appropriate transport and route messages to the remote service
+
+The Discovery system is used in a variety of places within Muon.  It can be used within the Protocol stack to lookup services dynamically (such as by the link:https://github.com/muoncore/stack-event[Event Stack] to select the appropriate event store), or within a Transport to obtain more detailed information on a remote service to connect to it 9such as in the link:https://github.com/muoncore/muon-amqp[AMQP Transport] to select the broker to connect to)
+
+When implementing a Discovery, you do not need to be aware of the precise usage, simply trading service descriptors is all that is required.
+
+#### Service Descriptor
+
+The service descriptor provides a run down of the base information needed to identify and connect to a remote service.
+
+Here is an example descriptor
+
+[source, javascript]
+----
+{
+    "serviceName": "photonlite",  <1>
+    "tags": [                     <2>
+      "eventstore"
+    ],
+    "transports": "amqp://muon:microservices@localhost"  <3>
+}
+----
+<1> The logical service name
+<2> The tags associated with this service
+<3> The transports configured for the service, in the form of a URL, provided by a `Transport`. Used to connect to the service.
+
+You can obtain these in your system by running `muon discover --raw | jq`
+
+#### Future extension - instance descriptors
+
+Muon Core is currently being extended to obtain and use specific instance information, allowing multiple services to have the same service name, but be addressed individually if required.
+
+Your discovery should maintain lists of instances internally and return one as the service in order to support this extension in the future.
 
 ### Create a Discovery for Muon Core Java
 
+A discovery in muon java extends the `Discovery` interface. At minimum, this needs to
 
+* List the names of the services in the system (full set)
+* Obtain a `ServiceDescriptor` for a given service name
+* Obtain a list of matching `ServiceDescriptor` for a given set of tags (matches full set)
+* Advertise the provided local `ServiceDescriptor`.
+
+How this happens internally, Muon Core doesn't know nor care about. You can have a peering system (such as multicast), use a server (such as etcd) or something else (such as Muon AMQP which uses an AMQP broadcast exchange for discovery)
+
+When Muon Core Java boots up, it reads properties from the `Autoconfiguration that it uses to initialise the Discovery and Transport lists. It does this by creating and invoking an instance of `MuonDiscoveryFactory`. This factory is passed the Autoconfiguration object during bootup (after all property sources have been read and applied), and so you can set properties to configure your discovery during creation.
+
+Set the properties `muon.discovery.factories` to point at your implementation of `MuonDiscoveryFactory`, like so
+
+[source, java]
+----
+AutoConfiguration config = MuonConfigBuilder.withServiceIdentifier("my-service").withTags("awesome") (1)
+  .addWriter(c -> {
+      c.getProperties().setProperty(
+              "muon.discovery.factories",
+              "io.muoncore.discovery.mine.MyDiscoveryTransportFactory");                  <1>
+
+      c.getProperties().put("my.discovery.server", "someservername");  <2>
+  }).build();
+----
+<1> Configure the discovery list to be `MyDiscoveryTransportFactory`. This should be a comma separated list.
+<2> Configure other properties that can affect the discovery. Here, a server name
 
 ### Create a Discovery for Muon Core Node
 
