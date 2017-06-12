@@ -65,6 +65,7 @@ These messages should never leak outside of the transport boundary, only MuonMes
 
 #### Connection Multiplexing (aka "Shared Channels")
 
+On many transport systems, creating and maintaining a single transport channel per interaction will be very costly
 
 #### URL Schemes/ connection detection
 
