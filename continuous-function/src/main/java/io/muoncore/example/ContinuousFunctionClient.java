@@ -5,10 +5,12 @@ import io.muoncore.MuonBuilder;
 import io.muoncore.config.AutoConfiguration;
 import io.muoncore.config.MuonConfigBuilder;
 import io.muoncore.example.protocol.continuousfunction.ContinuousClient;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Simple Muon example that acts as a client
  */
+@Slf4j
 public class ContinuousFunctionClient {
 
     public static void main(String[] args) throws Exception {
@@ -20,10 +22,8 @@ public class ContinuousFunctionClient {
 
         ContinuousClient client = new ContinuousClient(muon);
 
-        //# tag::api[]
         client.request("Hello World", 2, functionResponse -> {
-
+            log.info("Server said " + functionResponse.getResponse());
         });
-        //# end::api[]
     }
 }

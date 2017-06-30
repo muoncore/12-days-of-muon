@@ -17,9 +17,13 @@ endif::[]
 
 ## Create a new Muon Stack
 
-A Stack is one of the central concepts of Muon, it lets you easily express communication as a series of messages and do so in a highly portable, straight forward way. As such, it lets you easily implement _Reactive_ architectural principles for Microservices and other types of distributed system (eg, browser/ server etc)
+A Stack is one of the central concepts of Muon, it lets you implement a particular form of communication as a series of messages and do so in a highly portable, straight forward way. As such, it lets you easily implement _Reactive_ architectural principles for Microservices and other types of distributed system (eg, browser/ server etc)
 
-A Protocol Stack in Muon defines the message interchange that implements the communication you want (which we call a _Protocol_) and wraps that in a language idiomatic API to make it weasy to use.
+A Protocol Stack in Muon defines the message interchange that implements the communication you want (which we call a _Protocol_) and wraps that in a language idiomatic API to make it easy to use.
+
+Generally, a Muon stack is used to implement and encapsulate some technical interactions between 2 to many services rather than trying to implement a business workflow or business process. Examples of these are link:https://github.com/muoncore/stack-rpc[RPC], link:https://github.com/muoncore/stack-reactive-streams[Reactive Streams], link:https://github.com/muoncore/stack-event[Events]. If you are looking to map a business process, you may want to look at link:http://muoncore.io/submodules/newton/doc/index.html#process-managers-sagas[Newton sagas]
+
+This is not something you would be expected to do every day, rather taking a general pattern of communication you see a lot and distill it into a single stack.
 
 ### Stack Concepts
 
@@ -70,11 +74,13 @@ In our simple protocol, we will
 
 This is kind of like RPC, but simpler and a long running aspect to it.
 
-#### Building a Client API
+#### Building a Client
 
 The aim of building a Muon stack is to give a nice, user friendly API on top of distributed coordination/ messaging operation. You need to decide what this means for your API, such as whether it should be synchronous or not, the parameters and interactions that will happen.
 
 In this case, we have an initial communication, passing the register text, along with how often you wish to be notified, and then some mechanism will be needed to pass the response back.
+
+##### Client API
 
 Here is an example API, which uses a simple method call and passes a callback function for async notification of results. The function will be invoked every time you get a response back. Consider other APIs you could provide, some synchronous option, or change to a streaming API using Reactive Streams or similar.
 
@@ -91,9 +97,10 @@ include::{includedir}/continuous-function/src/main/java/io/muoncore/example/prot
 ----
 
 
-#### Building a Server API
 
-Providing a Server Stack is slightly different. You still have a managing object, that implements `ServerProtocolStack`. This object is provided to Muon Core for it to manage the lifecycle of. It provides ChannnelConnections on demand.
+#### Building a Server
+
+Providing a Server Stack is slightly different. You still have a managing object, that implements `ServerProtocolStack`. This object is provided to Muon Core for it to manage the lifecycle of. It provides `ChannnelConnections` on demand. Messages flow up and down the `ChannelConnection`, with each connection being a conversation with some remote service. Generally, conversation state is associated with the `ChannelConnection
 
 The basic API of a `ServerProtocolStack` is
 
@@ -113,29 +120,62 @@ Implementing this API is mostly about creating ChannelConnections and putting th
 ----
 include::{includedir}/continuous-function/src/main/java/io/muoncore/example/protocol/continuousfunction/ContinuousServer.java[]
 ----
-
+<1> Return a list of the available schemas used by the server, both inbound and outbound. Accessible via the introspection protocol.
+<2> Get the full protocol descriptor, used by introspection.
+<3> Open a channel to this protocol. This is the core API. You must provide an implementation of the channel interface that is fully connected to any server protocol, managing apis and server side state.
 
 #### Building the Protocol Machines
 
+The API is the part of the system that makes messaging easy to use. As such, you should make it intuitive and represent the ideas you are talking about simply and to the point.   Underneath the API is a messaging system that uses the facilities of Muon Core to find and talk to remote systems in a structured way using messaging.
+
+This is known in Muon as a "protocol". It is fairly free form in how it _can_ work, there is no interfaces or apis that must be implemented to make it work. In all cases you need some code to translate interactions with the stack API into Muon messages that are sent down a channel to some remote system and on the way back again convert the inbound messages into something useful.
+
+There are best practice patterns for implementing these protocols, however. If you want your protocol to be fully portable, implement it as a `JSProtocol`. This allows your core messaging interactions to be written once and then integrated into the various implementations of Muon Core, only needing to implement the API in each runtime you want to support.
+
+##### Java embedded protocol
+
+To make a new server side stack, you implement the `ServerStack` interface and then register it in the server stacks registry. Generally, this is done within a managing object that registers itself.
+
+This implementation of `ServerStacks` is
+
+Here is the continuous function client protocol implemented in Java
+
+[source,java]
+----
+include::{includedir}/continuous-function/src/main/java/io/muoncore/example/protocol/continuousfunction/ContinuousServer.java[]
+----
 
 
-TODO, pick the conversation
+##### JSProtocol version
 
+One potential problem with the above is having to change the implementation of the protocol and manage that change across different languages and runtimes. It is possible to implement the protocol section in a javascript module and access that
+
+Here is the same protocol implemented using JSProtocol and integrated into the stack
+
+[source,java]
+----
+include::{includedir}/continuous-function/src/main/java/io/muoncore/example/protocol/continuousfunction/ContinuousJSServer.java[]
+----
+
+The JSProtocol implementation looks like this
+
+[source,java]
+----
+include::{includedir}/continuous-function/src/main/resources/continuous-server.js[]
+----
+
+This is equivalent to the above Java implementation, with the advantage that it can also be used within another Muon runtime environment to give compatible behaviour
 
 ### Testing the Stacks
 
+There are few different ways to test your shiny new stacks, depending how much infrastructure you want to include in the test.
 
-### Create a Stack for Muon Core Java
+Taking Muon Java as the basis, you can
 
+* Unit test the stacks as normal, mock the transport client/ server api as appropriate, with most expectations set as "message X received", "message Y sent"
+* Instantiate the client/ server and attch their channels together using `Channels.connectAndTransform`. This tests the stacks against each other as an integration test, with none of the machinery of a transport/ discovery/ compression etc.
+* Instantiate two muon instances, use the in memory transport and attach the client/ server. A full integration test
 
+Generally, it is preferred to implement a test of each kind to ensure compatibility with the different messages that can be created at each level.
 
-### Create a Stack for Muon Core Node
-
-
-
-### Create a shared Protocol using JSProtocol
-
-Implementing the message semantics above in every language that Muon is implemented in could quickly become onerous. For many protocols, that doesn't matter, they are inherently tied to a particular language or runtime. For the majority though their value is in their portability and being widely available.
-
-To make this easier, we provide the ability to write the _Protocol_ once and have it run in a portable runtime. This runtime uses Javascript and is called the *JSProtocol*.
-
+The Muon transport layer will emit `ChannelFailed` and `ServiceNotFound` messages in some circumstances and your protocol *must* receive and correctly handle these to clean up/ inform the app code via the API, if appropriate.
