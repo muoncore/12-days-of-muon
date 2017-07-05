@@ -1,0 +1,23 @@
+---
+layout: documentation
+title: The Muon Model
+---
+:toc:
+:source-highlighter: pygments
+:title: Create a Stack
+:source-highlighter: pygments
+:toc: right
+:toc-title: Muon Model
+:toclevels: 6
+
+:includedir: .
+ifdef::env-doc[]
+:includedir: guide/
+endif::[]
+
+
+Microservices based on Messaging
+NOT SEDA style messaging where the broker and the queue is the primary concept. This is point to point services that know of each others existence.
+
+messages implement technical co-ordination between 1..N services. Part of that technical co-ordination will likely pass messages that contain application data. From the Muon model point of view, these messages are not special.
+

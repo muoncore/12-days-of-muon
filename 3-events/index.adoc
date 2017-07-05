@@ -19,15 +19,13 @@ ifdef::env-doc[]
 :includedir: guide/3-events
 endif::[]
 
-TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
+TIP: This guide is maintained at https://github.com/muoncore/guide Please submit issues at that repository.
 
-image:porkpie.jpg[Pork Pie,width=300,role="right", float="right",align="center"]
-
-Today, you will
+In this guide you will
 
 * Learn about events, using Photon
 * Persist updates to the Menu using Event Sourcing
-* Persist Orders as Events and Event Source the Orders Microservice
+* Persist Orders as Events and make the Orders Microservice use a stream processed view.
 * See application level Eventual Consistency in both services
 
 include::{includedir}/../12daypromo.adoc[]
@@ -142,7 +140,7 @@ as shown here, but you will likely need a more optimised query engine to work wi
 Our goal now it to take the service from the previous guide and update it to build its state from
 the above two events.
 
-Taking the Menu service from the previous tutorial, we need to udpate it
+Taking the Menu service from the previous tutorial, we need to update it
 
 
 ## Summary

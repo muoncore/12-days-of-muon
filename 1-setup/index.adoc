@@ -19,7 +19,7 @@ ifdef::env-doc[]
 :includedir: guide/1-setup
 endif::[]
 
-TIP: This guide is maintained at https://github.com/muoncore/12-days-of-muon Please submit issues at that repository.
+TIP: This guide is maintained at https://github.com/muoncore/guide Please submit issues at that repository.
 
 image:https://upload.wikimedia.org/wikipedia/commons/8/8e/Best_Blueberry_Pie_with_Foolproof_Pie_Dough.jpg[Blueberry,width=300,role="right", float="right",align="center"]
 

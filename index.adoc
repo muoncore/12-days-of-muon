@@ -24,3 +24,10 @@ These guides will help you understand various aspects of the Muon projects
 
 1. link:1-setup[Getting Set Up and your first Muon Service]
 1. link:2-api[API Services]
+1. link:3-api[Events and Event Stores]
+
+You can extend Muon by adding one or more of
+
+* link:create-a-discovery.html[Discovery]
+* link:create-a-transport.html[Transport]
+* link:create-a-stack.html[A Protocol Stack]- a defined message based API for inter service communication

@@ -96,8 +96,6 @@ This is implemented by creating a client class that takes the Muon object and us
 include::{includedir}/continuous-function/src/main/java/io/muoncore/example/protocol/continuousfunction/ContinuousClient.java[]
 ----
 
-
-
 #### Building a Server
 
 Providing a Server Stack is slightly different. You still have a managing object, that implements `ServerProtocolStack`. This object is provided to Muon Core for it to manage the lifecycle of. It provides `ChannnelConnections` on demand. Messages flow up and down the `ChannelConnection`, with each connection being a conversation with some remote service. Generally, conversation state is associated with the `ChannelConnection
